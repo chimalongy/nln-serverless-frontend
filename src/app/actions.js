@@ -78,6 +78,38 @@ export async function triggerPublishJob() {
 }
 
 /**
+ * Trigger all pipeline jobs manually.
+ */
+export async function triggerAllJobs() {
+  try {
+    ensureTriggerConfig();
+
+    const timestamp = new Date().toISOString();
+
+    const [scrape, rewrite, publish, deduplicate] = await Promise.all([
+      tasks.trigger('scrape-articles', { manual: true, timestamp }),
+      tasks.trigger('rewrite-articles', { manual: true, timestamp }),
+      tasks.trigger('publish-articles', { manual: true, timestamp }),
+      tasks.trigger('deduplicate-articles', { manual: true, timestamp }),
+    ]);
+
+    revalidatePath('/');
+    return { 
+      success: true, 
+      runs: {
+        scrape: scrape.id,
+        rewrite: rewrite.id,
+        publish: publish.id,
+        deduplicate: deduplicate.id
+      }
+    };
+  } catch (error) {
+    console.error('Error triggering all jobs:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Stop all currently running/queued jobs.
  * Lists all active runs and cancels each one.
  */
