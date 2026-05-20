@@ -86,12 +86,11 @@ export async function stopAllJobs() {
     ensureTriggerConfig();
 
     let cancelledCount = 0;
+    const activeStatuses = ['QUEUED', 'DEQUEUED', 'EXECUTING', 'WAITING', 'DELAYED', 'PENDING_VERSION'];
 
-    // List all active runs (queued, executing, waiting)
+    // List all active runs
     for await (const run of runs.list({
-      filter: {
-        status: ['QUEUED', 'DEQUEUED', 'EXECUTING', 'WAITING'],
-      },
+      status: activeStatuses,
     })) {
       try {
         await runs.cancel(run.id);
