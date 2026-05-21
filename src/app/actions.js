@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { tasks, runs, configure } from '@trigger.dev/sdk/v3';
+import { supabase } from '@/lib/supabase';
 
 /**
  * Configure Trigger.dev SDK with the API key.
@@ -79,10 +80,19 @@ export async function triggerPublishJob() {
 
 /**
  * Trigger all pipeline jobs manually.
+ * Also resumes/unpauses all future scheduled runs.
  */
 export async function triggerAllJobs() {
   try {
     ensureTriggerConfig();
+
+    // Resume schedules by setting schedules_paused to false
+    await supabase
+      .from('wp_sync_state')
+      .upsert({
+        id: '00000000-0000-0000-0000-000000000000',
+        sync_config: { schedules_paused: false }
+      });
 
     const timestamp = new Date().toISOString();
 
@@ -111,11 +121,19 @@ export async function triggerAllJobs() {
 
 /**
  * Stop all currently running/queued jobs.
- * Lists all active runs and cancels each one.
+ * Also pauses all future scheduled runs.
  */
 export async function stopAllJobs() {
   try {
     ensureTriggerConfig();
+
+    // Pause schedules by setting schedules_paused to true
+    await supabase
+      .from('wp_sync_state')
+      .upsert({
+        id: '00000000-0000-0000-0000-000000000000',
+        sync_config: { schedules_paused: true }
+      });
 
     let cancelledCount = 0;
     const activeStatuses = ['QUEUED', 'DEQUEUED', 'EXECUTING', 'WAITING', 'DELAYED', 'PENDING_VERSION'];
