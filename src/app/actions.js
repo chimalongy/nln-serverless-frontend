@@ -18,64 +18,38 @@ function ensureTriggerConfig() {
 }
 
 /**
- * Trigger the scrape-articles task manually.
- * Uses the Trigger.dev v4 SDK to trigger the task by its ID.
+ * Trigger the news jobs manually.
+ * Uses the Trigger.dev SDK to trigger both jobs.
  */
 export async function triggerScrapeJob() {
   try {
     ensureTriggerConfig();
 
-    const handle = await tasks.trigger('scrape-articles', {
-      manual: true,
-      timestamp: new Date().toISOString(),
-    });
+    const [naijanews, gistreel] = await Promise.all([
+      tasks.trigger('naijanews-action', { manual: true, timestamp: new Date().toISOString() }),
+      tasks.trigger('gistreel-action', { manual: true, timestamp: new Date().toISOString() }),
+    ]);
 
     revalidatePath('/');
-    return { success: true, runId: handle.id };
+    return { success: true, runId: `${naijanews.id}, ${gistreel.id}` };
   } catch (error) {
-    console.error('Error triggering scrape job:', error);
+    console.error('Error triggering news jobs:', error);
     return { success: false, error: error.message };
   }
 }
 
 /**
- * Trigger the rewrite-articles task manually.
+ * Trigger the news jobs manually (alias for legacy compatibility).
  */
 export async function triggerRewriteJob() {
-  try {
-    ensureTriggerConfig();
-
-    const handle = await tasks.trigger('rewrite-articles', {
-      manual: true,
-      timestamp: new Date().toISOString(),
-    });
-
-    revalidatePath('/');
-    return { success: true, runId: handle.id };
-  } catch (error) {
-    console.error('Error triggering rewrite job:', error);
-    return { success: false, error: error.message };
-  }
+  return triggerScrapeJob();
 }
 
 /**
- * Trigger the publish-articles task manually.
+ * Trigger the news jobs manually (alias for legacy compatibility).
  */
 export async function triggerPublishJob() {
-  try {
-    ensureTriggerConfig();
-
-    const handle = await tasks.trigger('publish-articles', {
-      manual: true,
-      timestamp: new Date().toISOString(),
-    });
-
-    revalidatePath('/');
-    return { success: true, runId: handle.id };
-  } catch (error) {
-    console.error('Error triggering publish job:', error);
-    return { success: false, error: error.message };
-  }
+  return triggerScrapeJob();
 }
 
 /**
@@ -96,21 +70,17 @@ export async function triggerAllJobs() {
 
     const timestamp = new Date().toISOString();
 
-    const [scrape, rewrite, publish, deduplicate] = await Promise.all([
-      tasks.trigger('scrape-articles', { manual: true, timestamp }),
-      tasks.trigger('rewrite-articles', { manual: true, timestamp }),
-      tasks.trigger('publish-articles', { manual: true, timestamp }),
-      tasks.trigger('deduplicate-articles', { manual: true, timestamp }),
+    const [naijanews, gistreel] = await Promise.all([
+      tasks.trigger('naijanews-action', { manual: true, timestamp }),
+      tasks.trigger('gistreel-action', { manual: true, timestamp }),
     ]);
 
     revalidatePath('/');
     return { 
       success: true, 
       runs: {
-        scrape: scrape.id,
-        rewrite: rewrite.id,
-        publish: publish.id,
-        deduplicate: deduplicate.id
+        naijanews: naijanews.id,
+        gistreel: gistreel.id,
       }
     };
   } catch (error) {

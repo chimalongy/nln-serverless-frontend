@@ -156,10 +156,8 @@ export default async function SettingsPage() {
         </div>
 
         <div className="space-y-3">
-          <ScheduleRow emoji="🔍" job="scrape-articles" cron={process.env.SCRAPE_SCHEDULE || '*/30 * * * *'} description="Scrape news sources for new articles" />
-          <ScheduleRow emoji="✍️" job="rewrite-articles" cron={process.env.REWRITE_SCHEDULE || '0 */2 * * *'} description="AI-rewrite scraped articles" />
-          <ScheduleRow emoji="📤" job="publish-articles" cron={process.env.PUBLISH_SCHEDULE || '0 */3 * * *'} description="Publish rewritten articles to WordPress" />
-          <ScheduleRow emoji="🧹" job="deduplicate-articles" cron={process.env.DEDUPLICATE_SCHEDULE || '0 2 * * *'} description="Daily deduplication and cleanup" />
+          <ScheduleRow emoji="📰" job="naijanews-action" cron={process.env.NAIJA_NEWS_SCHEDULE || '*/15 * * * *'} description="Scrape, rewrite, and publish NaijaNews articles" />
+          <ScheduleRow emoji="🎬" job="gistreel-action" cron={process.env.GISTREEL_SCHEDULE || '*/15 * * * *'} description="Scrape, rewrite, and publish GistReel articles" />
         </div>
       </section>
 
